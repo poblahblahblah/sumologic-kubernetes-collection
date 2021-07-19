@@ -1080,3 +1080,17 @@ Example Usage:
 {{- end -}}
 {{ $enabled }}
 {{- end -}}
+
+
+{{/*
+Add service labels
+
+Example Usage:
+{{- if eq (include "service.labels" dict("Provider" "fluentd" "Values" .Values)) "true" }}
+
+*/}}
+{{- define "service.labels" -}}
+{{- if (get (get .Values .Provider) "serviceLabels") }}
+{{ toYaml (get (get .Values .Provider) "serviceLabels") }}
+{{- end }}
+{{- end -}}

@@ -2353,6 +2353,23 @@ otelagent:
 
 ## Configure otelcol
 otelcol:
+  securityContext:
+    ## ToDo: Verify following comment
+    ## The group ID of all processes in the statefulset containers. By default this needs to be otelcol(999).
+    fsGroup: 999
+
+  ## Add custom labels to all otelcol sts pods(logs, metrics, events)
+  podLabels: {}
+
+  ## Add custom annotations to all otelcol sts pods(logs, metrics, events)
+  podAnnotations: {}
+
+  ## Add custom labels to all otelcol svc (logs, metrics, events)
+  serviceLabels: {}
+
+  ## Add custom labels to all otelcol statefulset PVC (logs, metrics, events)
+  pvcLabels: {}
+
   statefulset:
     image:
       repository: "public.ecr.aws/sumologic/sumologic-otel-collector-dev"
@@ -2679,6 +2696,51 @@ otelcol:
           ## and uncomment next one
           # exporters: [zipkin]
 
+logs:
+  statefulset:
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    ## Acceptable values for podAntiAffinity:
+    ## soft: specifies preferences that the scheduler will try to enforce but will not guarantee (Default)
+    ## hard: specifies rules that must be met for a pod to be scheduled onto a node
+    podAntiAffinity: "soft"
+    replicaCount: 3
+    resources:
+      limits:
+        memory: 1Gi
+        cpu: 1000m
+      requests:
+        memory: 768Mi
+        cpu: 500m
+    ## Option to define priorityClassName to assign a priority class to pods.
+    priorityClassName:
+
+    ## Add custom labels only to logs fluentd sts pods
+    podLabels: {}
+    ## Add custom annotations only to logs fluentd sts pods
+    podAnnotations: {}
+
+    ## Set securityContext for containers running in pods in logs statefulset.
+    containers:
+      fluentd:
+        securityContext: {}
+
+  ## Option to turn autoscaling on for fluentd and specify params for HPA.
+  ## Autoscaling needs metrics-server to access cpu metrics.
+  autoscaling:
+    enabled: false
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 50
+    # targetMemoryUtilizationPercentage: 50
+
+  ## Option to specify PodDisrutionBudgets
+  ## You can specify only one of maxUnavailable and minAvailable in a single PodDisruptionBudget
+  podDisruptionBudget:
+    minAvailable: 2
+  ## To use maxUnavailable, set minAvailable to null and uncomment the below:
+  #   maxUnavailable: 1
 ## Configure telegraf-operator
 ## This is an experimental configuration and shouldn't be used in production environment
 ## ref: https://github.com/influxdata/helm-charts/blob/master/charts/telegraf-operator/values.yaml
